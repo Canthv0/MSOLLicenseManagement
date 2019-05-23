@@ -1,19 +1,3 @@
-#############################################################################################
-# DISCLAIMER:																				#
-#																							#
-# THE SAMPLE SCRIPTS ARE NOT SUPPORTED UNDER ANY MICROSOFT STANDARD SUPPORT					#
-# PROGRAM OR SERVICE. THE SAMPLE SCRIPTS ARE PROVIDED AS IS WITHOUT WARRANTY				#
-# OF ANY KIND. MICROSOFT FURTHER DISCLAIMS ALL IMPLIED WARRANTIES INCLUDING, WITHOUT		#
-# LIMITATION, ANY IMPLIED WARRANTIES OF MERCHANTABILITY OR OF FITNESS FOR A PARTICULAR		#
-# PURPOSE. THE ENTIRE RISK ARISING OUT OF THE USE OR PERFORMANCE OF THE SAMPLE SCRIPTS		#
-# AND DOCUMENTATION REMAINS WITH YOU. IN NO EVENT SHALL MICROSOFT, ITS AUTHORS, OR			#
-# ANYONE ELSE INVOLVED IN THE CREATION, PRODUCTION, OR DELIVERY OF THE SCRIPTS BE LIABLE	#
-# FOR ANY DAMAGES WHATSOEVER (INCLUDING, WITHOUT LIMITATION, DAMAGES FOR LOSS OF BUSINESS	#
-# PROFITS, BUSINESS INTERRUPTION, LOSS OF BUSINESS INFORMATION, OR OTHER PECUNIARY LOSS)	#
-# ARISING OUT OF THE USE OF OR INABILITY TO USE THE SAMPLE SCRIPTS OR DOCUMENTATION,		#
-# EVEN IF MICROSOFT HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES						#
-#############################################################################################
-
 #==========================
 # Utility Functions
 #==========================
@@ -37,6 +21,10 @@ Function Write-Log {
 Function Test-MSOLServiceConnection {
     # Set the Error Action Prefernce to stop
     $ErrorActionPreference = "Stop"
+
+    # Log out some basic information since we run this at the begining of every cmdlet
+    Write-Log ('Module version ' + (Get-Module MSOLLicenseManagement |sort-object -Property version -Descending)[0].version.tostring())
+    Write-Log ('Invocation ' + $PSCmdlet.MyInvocation.line)
 
     # Make sure that the MSOL Module is installed
     if ($null -eq (Get-Module -ListAvailable MSOnline)) {

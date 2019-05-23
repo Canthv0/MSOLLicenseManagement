@@ -1,19 +1,3 @@
-#############################################################################################
-# DISCLAIMER:																				#
-#																							#
-# THE SAMPLE SCRIPTS ARE NOT SUPPORTED UNDER ANY MICROSOFT STANDARD SUPPORT					#
-# PROGRAM OR SERVICE. THE SAMPLE SCRIPTS ARE PROVIDED AS IS WITHOUT WARRANTY				#
-# OF ANY KIND. MICROSOFT FURTHER DISCLAIMS ALL IMPLIED WARRANTIES INCLUDING, WITHOUT		#
-# LIMITATION, ANY IMPLIED WARRANTIES OF MERCHANTABILITY OR OF FITNESS FOR A PARTICULAR		#
-# PURPOSE. THE ENTIRE RISK ARISING OUT OF THE USE OR PERFORMANCE OF THE SAMPLE SCRIPTS		#
-# AND DOCUMENTATION REMAINS WITH YOU. IN NO EVENT SHALL MICROSOFT, ITS AUTHORS, OR			#
-# ANYONE ELSE INVOLVED IN THE CREATION, PRODUCTION, OR DELIVERY OF THE SCRIPTS BE LIABLE	#
-# FOR ANY DAMAGES WHATSOEVER (INCLUDING, WITHOUT LIMITATION, DAMAGES FOR LOSS OF BUSINESS	#
-# PROFITS, BUSINESS INTERRUPTION, LOSS OF BUSINESS INFORMATION, OR OTHER PECUNIARY LOSS)	#
-# ARISING OUT OF THE USE OF OR INABILITY TO USE THE SAMPLE SCRIPTS OR DOCUMENTATION,		#
-# EVEN IF MICROSOFT HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES						#
-#############################################################################################
-# Adds or subtracts plans from the specified SKU
 Function Update-MSOLUserLicensePlan {
     <#
  
@@ -250,7 +234,7 @@ Function Update-MSOLUserLicensePlan {
         $MSOLUser = Get-MsolUser -UserPrincipalName $account.UserPrincipalName -ErrorAction SilentlyContinue
         
         # Make sure we have a value for $MSOLUSer
-        if ($null -eq $MSOLUser){
+        if ($null -eq $MSOLUser) {
             Write-Log ("[ERROR] - Unable to Find User" + $Account.UserPrincipalName)
             Write-Error ("Unable to Find User" + $Account.UserPrincipalName)
             [string[]]$CalculatedPlansToDisable = "Error"
@@ -268,7 +252,15 @@ Function Update-MSOLUserLicensePlan {
         # If Neither disable or enable were passed then we turn on all plans
         else {
             Write-Log ("Turning on all Plans for " + $Sku + " on user " + $Account.UserPrincipalName)
-            [string[]]$CalculatedPlansToDisable = "Enabled"
+            if ($MSOlUser.Licenses.accountskuid -contains $SKU) {
+                [string[]]$CalculatedPlansToDisable = "Enabled"
+            }
+            else {
+                Write-Log ("[ERROR] - Cannot find SKU " + $SKU + " assigned to " + $MSOLUser.UserPrincipalName)
+                Write-Error -Message ("Cannot find SKU " + $SKU + " assigned to " + $MSOLUser.UserPrincipalName)
+                [string[]]$CalculatedPlansToDisable = "Error"
+            }
+            
         }
 
         # Set the License Options based ont he value of $CalculatedPlansToDisable
