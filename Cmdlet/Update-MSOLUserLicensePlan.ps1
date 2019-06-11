@@ -232,12 +232,18 @@ Function Update-MSOLUserLicensePlan {
 
         # Get our user object
         $MSOLUser = Get-MsolUser -UserPrincipalName $account.UserPrincipalName -ErrorAction SilentlyContinue
-        
+
         # Make sure we have a value for $MSOLUSer
         if ($null -eq $MSOLUser) {
             Write-Log ("[ERROR] - Unable to Find User" + $Account.UserPrincipalName)
-            Write-Error ("Unable to Find User" + $Account.UserPrincipalName)
+            Write-Error ("Unable to Find User" + $Account.UserPrincipalName) -ErrorAction Continue
             [string[]]$CalculatedPlansToDisable = "Error"
+        }
+        elseif (!($MSOLUser.Licenses.AccountSkuId -contains $SKU)) {
+            Write-log "[ERROR] - Unable to verify the SKU to update is assigned"
+            Write-Log ("Assigned SKUs: " + $MSOLUser.Licenses.AccountSkuId)
+            Write-Error "Unable to verify SKU is Assigned to User" -ErrorAction Continue
+            [string[]]$CalculatedPlansToDisable = "Error"    
         }
         # If -planstodisable is set then read it in and set license options
         elseif (!([string]::IsNullOrEmpty($PlansToDisable))) {		
@@ -252,15 +258,7 @@ Function Update-MSOLUserLicensePlan {
         # If Neither disable or enable were passed then we turn on all plans
         else {
             Write-Log ("Turning on all Plans for " + $Sku + " on user " + $Account.UserPrincipalName)
-            if ($MSOlUser.Licenses.accountskuid -contains $SKU) {
-                [string[]]$CalculatedPlansToDisable = "Enabled"
-            }
-            else {
-                Write-Log ("[ERROR] - Cannot find SKU " + $SKU + " assigned to " + $MSOLUser.UserPrincipalName)
-                Write-Error -Message ("Cannot find SKU " + $SKU + " assigned to " + $MSOLUser.UserPrincipalName)
-                [string[]]$CalculatedPlansToDisable = "Error"
-            }
-            
+            [string[]]$CalculatedPlansToDisable = "Enabled"
         }
 
         # Set the License Options based ont he value of $CalculatedPlansToDisable
