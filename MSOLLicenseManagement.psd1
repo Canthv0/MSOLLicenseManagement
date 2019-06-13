@@ -12,7 +12,7 @@
 RootModule = '.\MSOLLicenseManagement.psm1'
 
 # Version number of this module.
-ModuleVersion = '2.0.2'
+ModuleVersion = '2.0.3'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -115,7 +115,8 @@ PrivateData = @{
         # IconUri = ''
 
         # ReleaseNotes of this module
-        ReleaseNotes = '2.0.2 - Update-MSOLUserLicensePlan provide better infromation when failing
+        ReleaseNotes = '2.0.3 - Fixed error checkingin Update-MsolUserLicensePlan
+        2.0.2 - Update-MSOLUserLicensePlan provide better infromation when failing
         2.0.2 - Update-MSOLUserLicensePlan will better handle trying to update a user if the SKU is not found
         2.0.1 - Added logging of cmdlet invocation to log file
         2.0.1 - Added Logging of module version to log file
