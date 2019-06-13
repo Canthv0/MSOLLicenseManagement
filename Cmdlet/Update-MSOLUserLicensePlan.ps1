@@ -225,21 +225,27 @@ Function Update-MSOLUserLicensePlan {
     # Update the Plans for the Users Passed in
     Foreach ($Account in $Users) {
 
+        # Ensure that our MSOLUser object is Null at the start of each loop
+        $MSOLUser = $null
+
         # For if we determine we need to skip processing the user
         $Skip = $false
 
         Write-Log ("==== Processing User " + $account.UserPrincipalName + " ====")
 
         # Get our user object
-        $MSOLUser = Get-MsolUser -UserPrincipalName $account.UserPrincipalName -ErrorAction SilentlyContinue
-
-        # Make sure we have a value for $MSOLUSer
-        if ($null -eq $MSOLUser) {
+        Try {
+            $MSOLUser = Get-MsolUser -UserPrincipalName $account.UserPrincipalName -ErrorAction Stop
+        }
+        Catch {
             Write-Log ("[ERROR] - Unable to Find User" + $Account.UserPrincipalName)
             Write-Error ("Unable to Find User" + $Account.UserPrincipalName) -ErrorAction Continue
             [string[]]$CalculatedPlansToDisable = "Error"
+            continue
         }
-        elseif (!($MSOLUser.Licenses.AccountSkuId -contains $SKU)) {
+        
+        # Check that the user object we found contains the SKU we are looking to update
+        if (!($MSOLUser.Licenses.AccountSkuId -contains $SKU)) {
             Write-log "[ERROR] - Unable to verify the SKU to update is assigned"
             Write-Log ("Assigned SKUs: " + $MSOLUser.Licenses.AccountSkuId)
             Write-Error "Unable to verify SKU is Assigned to User" -ErrorAction Continue
