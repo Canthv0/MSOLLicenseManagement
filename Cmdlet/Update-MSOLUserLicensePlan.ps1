@@ -56,7 +56,7 @@ Function Update-MSOLUserLicensePlan {
         (
             [string]$SKU,
             [string[]]$PlansToDisable,
-            [string]$MSOLUser
+            $MSOLUser
         )
 
         Write-Log "Determining Plans to Disable"
@@ -121,7 +121,7 @@ Function Update-MSOLUserLicensePlan {
         (
             [string]$SKU,
             [string[]]$PlansToEnable,
-            [string]$MSOLUser
+            $MSOLUser
         )
 
         Write-Log "Determining Plans to Enable"
