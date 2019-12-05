@@ -12,7 +12,7 @@
 RootModule = '.\MSOLLicenseManagement.psm1'
 
 # Version number of this module.
-ModuleVersion = '2.0.4'
+ModuleVersion = '2.0.5'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -115,7 +115,9 @@ PrivateData = @{
         # IconUri = ''
 
         # ReleaseNotes of this module
-        ReleaseNotes = '2.0.4 - Fixed issue where incorrect typing was causing Update-MSOLUserLicensePlan to fail in all cases (Thx Dan Y.)
+        ReleaseNotes = '
+        2.0.5 - Fixed issue with not logging invocation data prior to throwing incompatible switch error
+        2.0.4 - Fixed issue where incorrect typing was causing Update-MSOLUserLicensePlan to fail in all cases (Thx Dan Y.)
         2.0.3 - Fixed error checkingin Update-MsolUserLicensePlan
         2.0.2 - Update-MSOLUserLicensePlan provide better infromation when failing
         2.0.2 - Update-MSOLUserLicensePlan will better handle trying to update a user if the SKU is not found

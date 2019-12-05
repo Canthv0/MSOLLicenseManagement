@@ -131,6 +131,12 @@ Function Switch-MSOLUserLicense {
 	
     ### Main ####
 
+    # Make sure we have a valid log file path
+    Test-LogPath -LogFile $LogFile
+
+    # Make sure we have the connection to MSOL
+    Test-MSOLServiceConnection
+
     # Make sure we didn't get both enable and disable
     if (!([string]::IsNullOrEmpty($PlansToDisable)) -and !([string]::IsNullOrEmpty($PlansToEnable))) {
         Write-Log "[ERROR] - Cannot use both -PlansToDisable and -PlansToEnable at the same time"
@@ -140,12 +146,6 @@ Function Switch-MSOLUserLicense {
         Write-Log "[ERROR] - Cannot use -AttemptToMaintainPlans with -PlansToDisable or -PlansToEnable"
         Write-Error "Cannot use -AttemptToMaintainPlans with -PlansToDisable or -PlansToEnable" -ErrorAction Stop
     }
-
-    # Make sure we have a valid log file path
-    Test-LogPath -LogFile $LogFile
-
-    # Make sure we have the connection to MSOL
-    Test-MSOLServiceConnection
 
     # Make user our Users object is valid
     [array]$Users = Test-UserObject -ToTest $Users
