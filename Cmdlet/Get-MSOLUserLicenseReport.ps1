@@ -22,7 +22,11 @@ Function Get-MSOLUserLicenseReport {
 	If specified it will Over Write the current output CSV file instead of generating a new one.
 
 	.PARAMETER LogFile
-	File to log all actions taken by the function.
+    File to log all actions taken by the function.
+    
+    .PARAMETER IncludeDeletedUsers
+    Includes deleted users if doing a report of all users.
+    Will not work if -Users is specified
 
 	.OUTPUTS
 	Log file showing all actions taken by the function.
@@ -45,7 +49,8 @@ Function Get-MSOLUserLicenseReport {
         [array]$Users,
         [Parameter(Mandatory)]
         [string]$LogFile,
-        [switch]$OverWrite = $false
+        [switch]$OverWrite = $false,
+        [switch]$IncludeDeletedUsers = $false
     )
 	
     # Make sure we have a valid log file path
@@ -82,6 +87,7 @@ Function Get-MSOLUserLicenseReport {
     $Object | Add-Member -MemberType NoteProperty -Name DisplayName -Value "BASELINE_IGNORE"
     $Object | Add-Member -MemberType NoteProperty -Name UserPrincipalName -Value "BASELINE_IGNORE@contoso.com"
     $Object | Add-Member -MemberType NoteProperty -Name UsageLocation -Value "BASELINELOCATION_IGNORE"
+    $Object | Add-Member -MemberType NoteProperty -Name IsDeleted -Value "BASELINEDELETED_IGNORE"
     $Object | Add-Member -MemberType NoteProperty -Name SkuID -Value "BASELINESKU_IGNORE"
     $Object | Add-Member -MemberType NoteProperty -Name CommonName -Value "BASELINESKUNAME_IGNORE"
     $Object | Add-Member -MemberType NoteProperty -Name Assignment -Value "BASELINEINHERIT_IGNORE"
@@ -110,6 +116,12 @@ Function Get-MSOLUserLicenseReport {
         # Get all of the users in the tenant
         [array]$UserToProcess = Get-MsolUser -All
         Write-log ("Found " + $UserToProcess.count + " users in the tenant")
+
+        # Gather the deleted users as well if we want them
+        if ($IncludeDeletedUsers){
+            [array]$UserToProcess += Get-MsolUser -ReturnDeletedUsers -All
+            Write-Log ("Found " + $UserToProcess.count + " users and deleted users in tenant")
+        }
 
     }
     
@@ -164,6 +176,7 @@ Function Get-MSOLUserLicenseReport {
             $Object | Add-Member -MemberType NoteProperty -Name DisplayName -Value $UserObject.displayname
             $Object | Add-Member -MemberType NoteProperty -Name UserPrincipalName -Value $UserObject.userprincipalname
             $Object | Add-Member -MemberType NoteProperty -Name UsageLocation -Value $UserObject.UsageLocation
+            $Object | Add-Member -MemberType NoteProperty -Name IsDeleted -value ([bool]$UserObject.SoftDeletionTimestamp)
             $Object | Add-Member -MemberType NoteProperty -Name SkuID -Value "UNASSIGNED"
             $Object | Add-Member -MemberType NoteProperty -Name CommonName -Value "UNASSIGNED"
             $Object | Add-Member -MemberType NoteProperty -Name Assignment -Value "Explicit"
@@ -187,6 +200,7 @@ Function Get-MSOLUserLicenseReport {
                 $Object | Add-Member -MemberType NoteProperty -Name DisplayName -Value $UserObject.displayname
                 $Object | Add-Member -MemberType NoteProperty -Name UserPrincipalName -Value $UserObject.userprincipalname
                 $Object | Add-Member -MemberType NoteProperty -Name UsageLocation -Value $UserObject.UsageLocation
+                $Object | Add-Member -MemberType NoteProperty -Name IsDeleted -value ([bool]$UserObject.SoftDeletionTimestamp)
                 $Object | Add-Member -MemberType NoteProperty -Name SkuID -Value $license.accountskuid
                 $Object | Add-Member -MemberType NoteProperty -Name CommonName -Value $CommonName
 

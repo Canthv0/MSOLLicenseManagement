@@ -12,7 +12,7 @@
 RootModule = '.\MSOLLicenseManagement.psm1'
 
 # Version number of this module.
-ModuleVersion = '2.0.5'
+ModuleVersion = '2.1.0'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -116,6 +116,7 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = '
+        2.1.0 - Added support to exporting deleted users to to log report.
         2.0.5 - Fixed issue with not logging invocation data prior to throwing incompatible switch error
         2.0.4 - Fixed issue where incorrect typing was causing Update-MSOLUserLicensePlan to fail in all cases (Thx Dan Y.)
         2.0.3 - Fixed error checkingin Update-MsolUserLicensePlan
