@@ -40,12 +40,12 @@ Function Switch-MSOLUserLicense {
 	Log file showing all actions taken by the function.
 
 	.EXAMPLE
-	Switch-MSOLUserLicense -Users $NewUsers -Logfile C:\temp\add_license.log -SKU company:ENTERPRISEPACK -SKUToReplace company:STANDARDPACK
+	Switch-MSOLUserLicense -Users $NewUsers -Logfile C:\temp\switch_license.log -SKU company:ENTERPRISEPACK -SKUToReplace company:STANDARDPACK
 	
 	Replaces the STANDARDPACK with the ENTERPRISEPACK and enables all plans.
 
 	.EXAMPLE
-	Add-MSOLUserLicense -Users $NewUsers -Logfile C:\temp\add_license.log -SKU company:ENTERPRISEPACK -SKUTOReplace company:STANDARDPACK -PlanstoDisable Deskless,Sway,Teams1 
+	Switch-MSOLUserLicense -Users $NewUsers -Logfile C:\temp\switch_license.log -SKU company:ENTERPRISEPACK -SKUTOReplace company:STANDARDPACK -PlanstoDisable Deskless,Sway,Teams1 
 
 	Replaces the STANDARDPACK with the ENTERPRISEPACK and disables Deskless, Sway, and Teams.
 		

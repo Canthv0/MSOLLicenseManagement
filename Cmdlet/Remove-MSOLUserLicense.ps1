@@ -24,7 +24,7 @@ Function Remove-MSOLUserLicense {
 	Log file showing all actions taken by the function.
 
 	.EXAMPLE
-	Remove-MSOLUserLicense -Users $LeavingEmployees -Logfile C:\temp\add_license.log -SKU company:ENTERPRISEPACK
+	Remove-MSOLUserLicense -Users $LeavingEmployees -Logfile C:\temp\remove_license.log -SKU company:ENTERPRISEPACK
 	
 	Removes the SKU ENTERPRISEPACK from all users in the $LeavingEmployees variable
 

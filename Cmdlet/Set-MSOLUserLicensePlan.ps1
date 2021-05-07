@@ -34,12 +34,12 @@ Function Set-MSOLUserLicensePlan {
 	Log file showing all actions taken by the function.
 
 	.EXAMPLE
-	Set-MSOLUserLicensePlan -Users $Promoted -Logfile C:\temp\add_license.log -SKU company:ENTERPRISEPACK
+	Set-MSOLUserLicensePlan -Users $Promoted -Logfile C:\temp\set_license.log -SKU company:ENTERPRISEPACK
 	
 	Enable all of the plans in the ENTERPRISEPACK SKU for all users in $Promoted.  Overwriting any current settings.
 
 	.EXAMPLE
-	Set-MSOLUserLicensePlan -Users $Promoted -Logfile C:\temp\add_license.log -SKU company:ENTERPRISEPACK -PlanstoEnable SWAY,TEAMS1,EXCHANGE_S_ENTERPRISE,YAMMER_ENTERPRISE,OFFICESUBSCRIPTION
+	Set-MSOLUserLicensePlan -Users $Promoted -Logfile C:\temp\set_license.log -SKU company:ENTERPRISEPACK -PlanstoEnable SWAY,TEAMS1,EXCHANGE_S_ENTERPRISE,YAMMER_ENTERPRISE,OFFICESUBSCRIPTION
 
 	Set the enabled Plans for the ENTERPRISEPACK to be SWAY,TEAMS1,EXCHANGE_S_ENTERPRISE,YAMMER_ENTERPRISE,OFFICESUBSCRIPTION for all users in $Promoted.  This will overwrite any current plan settings for the user.
 	
