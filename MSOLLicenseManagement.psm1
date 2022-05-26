@@ -56,6 +56,33 @@ Function Test-MSOLServiceConnection {
     }
 }
 
+Function Test-MGServiceConnection {
+        # Set the Error Action Prefernce to stop
+    $ErrorActionPreference = "Stop"
+
+    # Make sure that the MS Graph Module is installed
+    if ($null -eq (Get-Module -ListAvailable Microsoft.Graph.Users)) {
+        Write-Error "Microsoft Graph Module Not installed.  Please install from https://docs.microsoft.com/en-us/powershell/microsoftgraph/overview?view=graph-powershell-beta" -ErrorAction Stop
+    }
+
+    # Log out some basic information since we run this at the begining of every cmdlet
+    Write-Log ('Module version ' + (Get-Module Microsoft.Graph.Users |sort-object -Property version -Descending)[0].version.tostring())
+    Write-Log ('Invocation ' + $PSCmdlet.MyInvocation.line)
+
+    $return = ([array](get-mguser -top 1 2>&1))[0].tostring()
+
+    if ($return -like "*Connect-MgGraph*") {
+         Write-Error "Please connect with Connect-MgGraph before running commands." -ErrorAction Stop
+    }
+    elseif ($return -like "*MicrosoftGraphUser*") {
+        Write-log ("Found User, graph connected")
+    }
+    else {
+        Write-log ("Unexpected Error Encountered: " + $Return)
+        Write-Error ("Unexpected Error Encountered: " + $Return) -ErrorAction Stop
+    }
+}
+
 # Updates a progress bar
 Function Update-Progress {
     Param 
