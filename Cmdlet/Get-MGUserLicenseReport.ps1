@@ -19,9 +19,6 @@ Function Get-MSOLUserLicenseReport {
 
 	.PARAMETER OverWrite
 	If specified it will Over Write the current output CSV file instead of generating a new one.
-
-	.PARAMETER LogFile
-    File to log all actions taken by the function.
     
 	.OUTPUTS
 	Log file showing all actions taken by the function.
@@ -42,39 +39,34 @@ Function Get-MSOLUserLicenseReport {
     param 
     (
         [array]$Users,
-        [Parameter(Mandatory)]
-        [string]$LogFile,
         [switch]$OverWrite = $false,
     )
-	
-    # Make sure we have a valid log file path
-    Test-LogPath -LogFile $LogFile
 
     # Make sure we have the connection to MSOL
     Test-MGServiceConnection
 	
-    Write-Log "Generating Sku and Plan Report"
+    Write-SimpleLogFile "Generating Sku and Plan Report"
 
     # Get all of the availible SKUs
-    $AllSku = Get-MgSubscribedSku
+    $AllSku = Get-MgSubscribedSku 2>%1
     if ($AllSku.count -le 0){
-        Write-Error ("No SKU found.  Do you have permissions to run Get-MGSubscribedSKU? `n Connect-MGGraph -scopes Organization.Read.All, Directory.Read.All, Organization.ReadWrite.All, Directory.ReadWrite.All")
+        Write-Error ("No SKU found! Do you have permissions to run Get-MGSubscribedSKU? `nSuggested Command: Connect-MGGraph -scopes Organization.Read.All, Directory.Read.All, Organization.ReadWrite.All, Directory.ReadWrite.All")
     }
     else {
-         Write-Log ("Found " + $AllSku.count + " SKUs in the tenant")
+         Write-SimpleLogFile ("Found " + $AllSku.count + " SKUs in the tenant")
     }
 	
-    # Make sure out plan array is null
+    # Make sure our plan array is null
     [array]$Plans = $null
 
     # Build a list of all of the plans from all of the SKUs
     foreach ($Sku in $AllSku) {
-        $SKU.serviceplans.serviceplanname | ForEach-Object { [array]$Plans = $Plans + $_.servicename }
+        $SKU.ServicePlans.ServicePlanName | ForEach-Object { [array]$Plans = $Plans + $_ }
     }
 
     # Need just the unique plans
     $Plans = $Plans | Select-Object -Unique | Sort-Object
-    Write-Log ("Found " + $Plans.count + " Unique plans in the tenant")
+    Write-SimpleLogFile ("Found " + $Plans.count + " Unique plans in the tenant")
 
     # Make sure the output array is null
     $Output = $null
@@ -88,7 +80,6 @@ Function Get-MSOLUserLicenseReport {
     $Object | Add-Member -MemberType NoteProperty -Name UsageLocation -Value "BASELINELOCATION_IGNORE"
     $Object | Add-Member -MemberType NoteProperty -Name IsDeleted -Value "BASELINEDELETED_IGNORE"
     $Object | Add-Member -MemberType NoteProperty -Name SkuID -Value "BASELINESKU_IGNORE"
-    $Object | Add-Member -MemberType NoteProperty -Name CommonName -Value "BASELINESKUNAME_IGNORE"
     $Object | Add-Member -MemberType NoteProperty -Name Assignment -Value "BASELINEINHERIT_IGNORE"
 
     # Populate a value into all of the plan names
@@ -109,17 +100,17 @@ Function Get-MSOLUserLicenseReport {
     # See if our user array is null and pull all users if needed
     if ($null -eq $Users) {
 
-        Write-Log "Getting all users in the tenant."
-        Write-Log "This can take some time."
+        Write-SimpleLogFile "Getting all users in the tenant."
+        Write-SimpleLogFile "This can take some time."
 
         # Get all of the users in the tenant
         [array]$UserToProcess = Get-MsolUser -All
-        Write-log ("Found " + $UserToProcess.count + " users in the tenant")
+        Write-SimpleLogFile ("Found " + $UserToProcess.count + " users in the tenant")
 
         # Gather the deleted users as well if we want them
         if ($IncludeDeletedUsers){
             [array]$UserToProcess += Get-MsolUser -ReturnDeletedUsers -All
-            Write-Log ("Found " + $UserToProcess.count + " users and deleted users in tenant")
+            Write-SimpleLogFile ("Found " + $UserToProcess.count + " users and deleted users in tenant")
         }
 
     }
@@ -130,17 +121,17 @@ Function Get-MSOLUserLicenseReport {
         # Make user our Users object is valid
         [array]$Users = Test-UserObject -ToTest $Users
 
-        Write-Log "Gathering License information for provided users"
+        Write-SimpleLogFile "Gathering License information for provided users"
         $i = 0
         
         # Get the data for each user to use in generating the report
         foreach ($account in $Users) {
             $i++
             [array]$UserToProcess = [array]$UserToProcess + (Get-MsolUser -UserPrincipalName $Account.UserPrincipalName)
-            if (!($i % 100)) { Write-log ("Gathered Data for " + $i + " Users") }
+            if (!($i % 100)) { Write-SimpleLogFile ("Gathered Data for " + $i + " Users") }
         }
 
-        Write-log ("Found " + $UserToProcess.count + " users to report on")
+        Write-SimpleLogFile ("Found " + $UserToProcess.count + " users to report on")
     }
 
     # Now that we have all of the user objects we need to start processing them and building our output object
@@ -156,14 +147,14 @@ Function Get-MSOLUserLicenseReport {
     $SkuArray = Get-Content (join-path (Split-path (((get-module MSOLLicenseManagement)[0]).path) -Parent) "SkuMap.json") | convertfrom-json
 
     # Process each user
-    Write-Log "Generating Report"
+    Write-SimpleLogFile "Generating Report"
     foreach ($UserObject in $UserToProcess) {
 	
         # Increase the counter
         $i++
         
         # Output every 100 users for progress
-        if (!($i % 100)) { Write-log ("Finished " + $i + " Users") }
+        if (!($i % 100)) { Write-SimpleLogFile ("Finished " + $i + " Users") }
 		
         # If no license is assigned we need to create that object
         if ($UserObject.isLicensed -eq $false) {
@@ -201,7 +192,6 @@ Function Get-MSOLUserLicenseReport {
                 $Object | Add-Member -MemberType NoteProperty -Name UsageLocation -Value $UserObject.UsageLocation
                 $Object | Add-Member -MemberType NoteProperty -Name IsDeleted -value ([bool]$UserObject.SoftDeletionTimestamp)
                 $Object | Add-Member -MemberType NoteProperty -Name SkuID -Value $license.accountskuid
-                $Object | Add-Member -MemberType NoteProperty -Name CommonName -Value $CommonName
 
                 # Add each of the plans for the license in along with its status
                 foreach ($value in $license.servicestatus) {
@@ -289,7 +279,7 @@ Function Get-MSOLUserLicenseReport {
         }
     }
 
-    Write-Log ("Exporting report to " + $path)
+    Write-SimpleLogFile ("Exporting report to " + $path)
 
     # Export everything to the CSV file
     $Output | Export-Csv $path -Force -NoTypeInformation
@@ -298,6 +288,6 @@ Function Get-MSOLUserLicenseReport {
     $Temp = Import-Csv $path
     $Temp | Where-Object { $_.UserPrincipalName -ne "BASELINE_IGNORE@contoso.com" } | Export-Csv $path -Force -NoTypeInformation
 	
-    Write-log "Report generation finished"
+    Write-SimpleLogFile "Report generation finished"
 }
 
