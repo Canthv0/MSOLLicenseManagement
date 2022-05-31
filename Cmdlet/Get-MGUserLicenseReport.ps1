@@ -1,6 +1,6 @@
 # Generates an MSOL User License Report
 
-Function Get-MSOLUserLicenseReport {
+Function Get-MGUserLicenseReport {
     <#
  
 	.SYNOPSIS
@@ -39,21 +39,20 @@ Function Get-MSOLUserLicenseReport {
     param 
     (
         [array]$Users,
-        [switch]$OverWrite = $false,
+        [switch]$OverWrite = $false
     )
 
     # Make sure we have the connection to MSOL
     Test-MGServiceConnection
 	
-    Write-SimpleLogFile "Generating Sku and Plan Report"
+    Write-SimpleLogFile "Generating Sku and Plan Report" -OutHost
 
     # Get all of the availible SKUs
     $AllSku = Get-MgSubscribedSku 2>%1
-    if ($AllSku.count -le 0){
+    if ($AllSku.count -le 0) {
         Write-Error ("No SKU found! Do you have permissions to run Get-MGSubscribedSKU? `nSuggested Command: Connect-MGGraph -scopes Organization.Read.All, Directory.Read.All, Organization.ReadWrite.All, Directory.ReadWrite.All")
-    }
-    else {
-         Write-SimpleLogFile ("Found " + $AllSku.count + " SKUs in the tenant")
+    } else {
+        Write-SimpleLogFile ("Found " + $AllSku.count + " SKUs in the tenant") -OutHost
     }
 	
     # Make sure our plan array is null
@@ -66,7 +65,7 @@ Function Get-MSOLUserLicenseReport {
 
     # Need just the unique plans
     $Plans = $Plans | Select-Object -Unique | Sort-Object
-    Write-SimpleLogFile ("Found " + $Plans.count + " Unique plans in the tenant")
+    Write-SimpleLogFile ("Found " + $Plans.count + " Unique plans in the tenant") -OutHost
 
     # Make sure the output array is null
     $Output = $null
@@ -88,30 +87,25 @@ Function Get-MSOLUserLicenseReport {
         $Object | Add-Member -MemberType NoteProperty -Name $value -Value "---"
     }
 
-    # Create the output list array
+    # Create the output list arrays
     $Output = New-Object System.Collections.ArrayList
+    $UserToProcess = New-Object System.Collections.ArrayList
 
     # Populate in the generic object to the list array
     $Output.Add($Object) | Out-Null
 
     # Make sure our UserToProcess array is created and is null
-    [array]$UserToProcess = $null
+    $UserToProcess = $null
 
     # See if our user array is null and pull all users if needed
     if ($null -eq $Users) {
 
-        Write-SimpleLogFile "Getting all users in the tenant."
-        Write-SimpleLogFile "This can take some time."
+        Write-SimpleLogFile "Getting all users in the tenant." -OutHost
+        Write-SimpleLogFile "This can take some time." -OutHost
 
         # Get all of the users in the tenant
-        [array]$UserToProcess = Get-MsolUser -All
-        Write-SimpleLogFile ("Found " + $UserToProcess.count + " users in the tenant")
-
-        # Gather the deleted users as well if we want them
-        if ($IncludeDeletedUsers){
-            [array]$UserToProcess += Get-MsolUser -ReturnDeletedUsers -All
-            Write-SimpleLogFile ("Found " + $UserToProcess.count + " users and deleted users in tenant")
-        }
+        $UserToProcess = Get-MgUser -All
+        Write-SimpleLogFile ("Found " + $UserToProcess.count + " users in the tenant") -OutHost
 
     }
     
@@ -119,45 +113,44 @@ Function Get-MSOLUserLicenseReport {
     else {
 		
         # Make user our Users object is valid
-        [array]$Users = Test-UserObject -ToTest $Users
+        [array]$Users = Test-MGUserObject -ToTest $Users
 
-        Write-SimpleLogFile "Gathering License information for provided users"
+        Write-SimpleLogFile "Gathering License information for provided users" -OutHost
         $i = 0
         
         # Get the data for each user to use in generating the report
         foreach ($account in $Users) {
             $i++
-            [array]$UserToProcess = [array]$UserToProcess + (Get-MsolUser -UserPrincipalName $Account.UserPrincipalName)
+            Update-MGProgress -CurrentCount $i -MaxCount $users.count -Message "Gathering License information for provided users"
+            ### TODO: Need some error handling here for "bad inputs"
+            $UserToProcess.Add((get-mguser -ConsistencyLevel eventual -Search ("Userprincipalname:" + $account.userprincipalname)))            
             if (!($i % 100)) { Write-SimpleLogFile ("Gathered Data for " + $i + " Users") }
         }
 
         Write-SimpleLogFile ("Found " + $UserToProcess.count + " users to report on")
     }
 
-    # Now that we have all of the user objects we need to start processing them and building our output object
+    ### Now that we have all of the user objects we need to start processing them and building our output object  ###
 
     # Setup a counter for informing the user of progress
     $i = 0
 	
-    # Null out the group cache array
-    # Array holds group names and GUIDs so we do not have a lookup a group more than once
-    [array]$GroupCache = $Null
-
-    # Pull in our SkuID to Common Name map
-    $SkuArray = Get-Content (join-path (Split-path (((get-module MSOLLicenseManagement)[0]).path) -Parent) "SkuMap.json") | convertfrom-json
-
     # Process each user
-    Write-SimpleLogFile "Generating Report"
+    Write-SimpleLogFile "Generating Report" -OutHost
     foreach ($UserObject in $UserToProcess) {
 	
         # Increase the counter
         $i++
+        Update-MGProgress -CurrentCount $i -MaxCount $UserToProcess.count -Message "Generating Report"
         
         # Output every 100 users for progress
         if (!($i % 100)) { Write-SimpleLogFile ("Finished " + $i + " Users") }
+
+        # Get the license assignments for the user
+        $licenseOptions = Get-MgUserLicenseDetail -UserId $UserObject.Id
 		
         # If no license is assigned we need to create that object
-        if ($UserObject.isLicensed -eq $false) {
+        if ($licenseOptions.count -eq 0) {
 		
             $Object = $null
 		
@@ -168,83 +161,40 @@ Function Get-MSOLUserLicenseReport {
             $Object | Add-Member -MemberType NoteProperty -Name UsageLocation -Value $UserObject.UsageLocation
             $Object | Add-Member -MemberType NoteProperty -Name IsDeleted -value ([bool]$UserObject.SoftDeletionTimestamp)
             $Object | Add-Member -MemberType NoteProperty -Name SkuID -Value "UNASSIGNED"
-            $Object | Add-Member -MemberType NoteProperty -Name CommonName -Value "UNASSIGNED"
             $Object | Add-Member -MemberType NoteProperty -Name Assignment -Value "Explicit"
 		
             # Add the object to the output array
-            #[array]$Output = $Output + $Object
             $Output.Add($Object) | Out-Null
         }
 		
         #If we have a license then add that information
         else {
+            
+            # Get how the licenses are assigned
+            $UserLicenseAssignment = Get-MGUserLicenseAssignmentState -UserId $UserObject.Id
+            
             # We can have more than one license on a user so we need to do each one seperatly
-            foreach ($license in $UserObject.licenses) {
+            foreach ($license in $licenseOptions) {
                 $Object = $null
-				
-                # Get the common name of the licnese from our skuid.json
-                $CommonName = Get-SKUCommonName -Skuid ((($license.accountskuid).split(":"))[-1]) -SkuArray $SkuArray
-				
+
+                # Determine how the license is assigned
+                $assignment = Get-MGLicenseAssignmentMethod -UserAssignementArray $UserLicenseAssignment -SkuToResolve $license.SkuId
+                			
                 # Create our object and populate in our values
                 $Object = New-Object -TypeName PSobject
                 $Object | Add-Member -MemberType NoteProperty -Name DisplayName -Value $UserObject.displayname
                 $Object | Add-Member -MemberType NoteProperty -Name UserPrincipalName -Value $UserObject.userprincipalname
                 $Object | Add-Member -MemberType NoteProperty -Name UsageLocation -Value $UserObject.UsageLocation
                 $Object | Add-Member -MemberType NoteProperty -Name IsDeleted -value ([bool]$UserObject.SoftDeletionTimestamp)
-                $Object | Add-Member -MemberType NoteProperty -Name SkuID -Value $license.accountskuid
+                $Object | Add-Member -MemberType NoteProperty -Name SkuID -Value $license.SKUPartNumber
+                $Object | Add-Member -MemberType NoteProperty -Name Assignment -Value $assignment
 
                 # Add each of the plans for the license in along with its status
-                foreach ($value in $license.servicestatus) {
+                foreach ($value in $license.ServicePlans) {
 				
-                    $Object | Add-Member -MemberType NoteProperty -Name $value.serviceplan.servicename -Value $value.ProvisioningStatus
-				
-                }
-				
-                # Get the inherited from / status of the license based on GBL
-                # If there are no groups in GroupsAssigningLicense then it is explicitly assigned
-                if ($license.GroupsAssigningLicense.count -le 0) {
-					
-                    $Object | Add-Member -MemberType NoteProperty -Name Assignment -Value "Explicit"				
+                    $Object | Add-Member -MemberType NoteProperty -Name $value.ServicePlanName -Value $value.ProvisioningStatus
 				
                 }
-                # If it is populated then we need to process ALL values
-                else {
-				
-                    # Null out our assigned by string
-                    [string]$assignedby = $null
-					
-                    # Process each group entry and work to resolve them
-                    foreach ($entry in $license.GroupsAssigningLicense) {
-					
-                        # If the GUID = the ObjectID then it is direct assigned
-                        if ($entry.guid -eq $UserObject.objectid) { [string]$assignedby = $assignedby + "Explicit;" }
-						
-                        # If it doesn't match the objectid of the user then it is a group and we need to resolve it
-                        else {
-						
-                            # if groupcache isn't populated yet then we know we need to look it up
-                            if ($null -eq $GroupCache) {
-                                [array]$GroupCache = $GroupCache + (Get-MsolGroup -objectid $entry.guid | Select-Object -Property objectid, displayname)
-                            }
-                            # If not null check if we have a cache hit
-                            else {
-                                # If the guid is in the groupcache then no action needed
-                                if ($GroupCache.objectid -contains $entry.guid) { }
-								
-                                # If we have a cache miss then we need to populate it into the cache
-                                else { [array]$GroupCache = $GroupCache + (Get-MsolGroup -objectid $entry.guid | Select-Object -Property objectid, displayname) }
-                            }
-							
-                            # Add the group information from the cache to the output
-                            [string]$assignedby = $assignedby + ($GroupCache | Where-Object { $_.objectid -eq $entry.guid }).DisplayName + ";"
-                        }
-					
-                    }
-				
-                    # Add the value of assignment to the object
-                    $Object | Add-Member -MemberType NoteProperty -Name Assignment -Value ($assignedby.trimend(";"))
-                }
-				
 				
                 # Add the object created from the user information to the output array
                 #[array]$Output = $Output + $Object
@@ -263,7 +213,7 @@ Function Get-MSOLUserLicenseReport {
     # Default behavior will be to create a new incremental file name
     else {
         # Build our file name
-        $RootPath = Join-path (Split-Path $LogFile -Parent) ("License_Report_" + [string](Get-Date -UFormat %Y%m%d))
+        $RootPath = Join-path $env:LOCALAPPDATA ("License_Report_" + [string](Get-Date -UFormat %Y%m%d))
         $TryPath = $RootPath + "*"
 		
         # Find any existing files that start with our planed file name
@@ -279,7 +229,7 @@ Function Get-MSOLUserLicenseReport {
         }
     }
 
-    Write-SimpleLogFile ("Exporting report to " + $path)
+    Write-SimpleLogFile ("Exporting report to " + $path) -OutHost
 
     # Export everything to the CSV file
     $Output | Export-Csv $path -Force -NoTypeInformation
@@ -288,6 +238,6 @@ Function Get-MSOLUserLicenseReport {
     $Temp = Import-Csv $path
     $Temp | Where-Object { $_.UserPrincipalName -ne "BASELINE_IGNORE@contoso.com" } | Export-Csv $path -Force -NoTypeInformation
 	
-    Write-SimpleLogFile "Report generation finished"
+    Write-SimpleLogFile "Report generation finished" -OutHost
 }
 

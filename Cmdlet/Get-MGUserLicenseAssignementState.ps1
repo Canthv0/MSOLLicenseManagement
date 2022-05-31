@@ -1,7 +1,7 @@
 # Generates an MSOL User License Report
 
 Function Get-MGUserLicenseAssignmentState {
-    <#
+	<#
  
 	.SYNOPSIS
 	Generates a comprehensive license report.
@@ -36,29 +36,28 @@ Function Get-MGUserLicenseAssignmentState {
 	
     #>
     
-    param 
-    (
-        [Parameter(Mandatory = $true)]
-        [array]$UserID
-    )
+	param 
+	(
+		[Parameter(Mandatory = $true)]
+		[array]$UserID
+	)
 
-    # Make sure we have the connection to MSOL
-    Test-MGServiceConnection
+	# Make sure we have the connection to MSOL
+	Test-MGServiceConnection
 	
-    Write-SimpleLogFile "Gathering user license assignment state"
+	Write-SimpleLogFile "Gathering user license assignment state"
 
-    $Uri = "https://graph.microsoft.com/v1.0/users/" + $UserID + "?`$select=licenseAssignmentStates"
+	$Uri = "https://graph.microsoft.com/v1.0/users/" + $UserID + "?`$select=licenseAssignmentStates"
     
 	$error.clear()
 	$state = Invoke-MgGraphRequest -Uri $Uri -OutputType JSON 2>&1
 
-	if ($error.count -eq 0){
-        Write-SimpleLogfile ("Found User, graph connected")
-    }
-    else {
-        Write-SimpleLogfile ("Error Encountered: " + $error[0].tostring())
-        Write-Error -message $error[0].tostring() -ErrorAction Stop 
-    }
+	if ($error.count -eq 0) {
+		Write-SimpleLogfile ("Found User, graph connected")
+	} else {
+		Write-SimpleLogfile ("Error Encountered: " + $error[0].tostring())
+		Write-Error -message $error[0].tostring() -ErrorAction Stop 
+	}
   
-    Return $state
+	Return ($state | ConvertFrom-JSON).licenseAssignmentStates
 }

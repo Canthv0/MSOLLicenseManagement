@@ -23,7 +23,7 @@ Function Test-MSOLServiceConnection {
     $ErrorActionPreference = "Stop"
 
     # Log out some basic information since we run this at the begining of every cmdlet
-    Write-Log ('Module version ' + (Get-Module MSOLLicenseManagement |sort-object -Property version -Descending)[0].version.tostring())
+    Write-Log ('Module version ' + (Get-Module MSOLLicenseManagement | sort-object -Property version -Descending)[0].version.tostring())
     Write-Log ('Invocation ' + $PSCmdlet.MyInvocation.line)
 
     # Make sure that the MSOL Module is installed
@@ -50,8 +50,7 @@ Function Test-MSOLServiceConnection {
             Write-log ("Unexpected Error encountered" + $error)
             Write-Error "Unexpected Error stopping execution" -ErrorAction Stop
         }
-    }
-    else {
+    } else {
         # Do nothing because we are connected
     }
 }
@@ -78,8 +77,7 @@ Function Update-Progress {
         [int]$Percent = (($CurrentCount / $MaxCount) * 100)
         [string]$Operation = ([string]$Percent + "% " + $Message)
         Write-Progress -Activity "User Modification" -CurrentOperation $Operation -PercentComplete $Percent
-    }
-    else {
+    } else {
         # Nothing to do if not divisible by 25
     }
 }
@@ -147,6 +145,9 @@ Function Test-UserObject {
         Return $ToTest
     }
 }
+
+
+
 
 # Convert SkuID into Common Name
 Function Get-SKUCommonName {
@@ -347,19 +348,116 @@ Function Test-MGServiceConnection {
     }
 
     # Log out some basic information since we run this at the begining of every cmdlet
-    Write-SimpleLogfile ('Module version ' + [array](Get-Module Microsoft.Graph.Users |sort-object -Property version -Descending)[0].version.tostring())
-    Write-SimpleLogfile ('Invocation ' + $PSCmdlet.MyInvocation.line)
+    Write-SimpleLogfile ('Module version ' + [array](Get-Module Microsoft.Graph.Users | sort-object -Property version -Descending)[0].version.tostring())
 
     # Clear any existing errors
     $error.clear()
     # Try to get a user to test that we have a connection
-    $user = Get-MgUser -top 1 2>&1
+    try { $null = Get-MgUser -top 1 -ErrorAction Stop }
+    catch { 
+        Write-SimpleLogFile ("[Error]: " + $_)
+        Write-Error "$_" -ErrorAction Stop
+    }
+}
 
-    if ($error.count -eq 0){
-        Write-SimpleLogfile ("Found User, graph connected")
+# Determine if we have an array with UPNs or just a single UPN / UPN array unlabeled
+Function Test-MGUserObject {
+    param ([array]$ToTest)
+
+    # See if we can get the UserPrincipalName property off of the input object
+    # If we can't get the property then test the input and see if we can generate an acceptable object array
+    if ($null -eq $ToTest[0].UserPrincipalName) {
+        # Very basic check to see if this is a UPN
+        # This deals with the input user@company.com,user2@company.com ....
+        
+        if ($ToTest[0] -match '@') {
+            [array]$Output = $ToTest | Select-Object -Property @{Name = "UserPrincipalName"; Expression = { $_ } }
+            Return $Output
+        }
+        # If we couldn't find the UserPrincipalName and we didn't see an @ sign then we need to abort
+        else {
+            Write-SimpleLogfile "[ERROR] - Unable to determine if input is a UserPrincipalName"
+            Write-SimpleLogfile "Please provide a UPN or array of objects with the property UserPrincipalName populated"
+            Write-Error "Unable to determine if input is a User Principal Name" -ErrorAction Stop
+        }
     }
+    # If we can pull the value of UserPrincipalName then just return the same object back
     else {
-        Write-SimpleLogfile ("Error Encountered: " + $error[0].tostring())
-        Write-Error -message $error[0].tostring() -ErrorAction Stop 
+        Return $ToTest
     }
+}
+
+Function Get-MGLicenseAssignmentMethod {
+    param (
+        [array]$UserAssignementArray,
+        [string]$SkuToResolve
+    )
+
+    [array]$Assignement = $UserAssignementArray | where-object { $_.skuid -eq $SkuToResolve }
+
+    # If we didn't get a match then we don't know how this license has been assigned
+    If ($Assignement.count -eq 0) {
+        $Return = "Unknown"
+    } 
+    # We shouldn't end up here since we should not have multiple ways to assign a license
+    elseif ($Assignement.count -gt 1) {
+        $Return = "Multiple"
+    } 
+    # process if we got a value back
+    else {
+        # If assign by group is null then we are a direct assignment
+        if ($null -eq $Assignement[0].assignedByGroup) {
+            $Return = "Explicit"
+        } 
+        # Else we need to return the display name
+        else {
+            $Return = Get-MGAssignmentGroup -GroupID $Assignement[0].assignedByGroup
+        }
+    }
+
+    return $Return
+}
+
+Function Get-MGAssignmentGroup {
+    param (
+        [string]$GroupID
+    )
+
+    # If the group ID is in the global variable cache return that 
+    if ($cache_assignmentgroup -contains $GroupID) {
+        return ($cache_assignmentgroup | Where-Object { $_.id -eq $GroupID }).DisplayName
+    } 
+    # otherwise pull the group from graph and add it to the cache
+    else {
+        [array]$group = Get-MGGroup -GroupID $GroupID
+        Set-Variable -Name cache_assignmentgroup -scope global -value ([array]$cache_assignmentgroup + [array]$group)
+        return $group.DisplayName
+    }
+        
+
+}
+
+# Create and update a progress bar as part of a loop
+# Updated for PS 7
+Function Update-MGProgress {
+    Param 
+    (
+        [Parameter(Mandatory = $true)]
+        [int]$CurrentCount,
+        [Parameter(Mandatory = $true)]
+        [int]$MaxCount,
+        [Parameter(Mandatory = $true)]
+        [string]$Message
+    )
+
+    # If our counts match then close out the bar
+    if ($CurrentCount -eq $MaxCount) {
+        Write-Progress -Completed -Activity $Message
+    } 
+    # Update the progress bar with the current %
+    else {
+        [int]$Percent = ($CurrentCount / $MaxCount) * 100
+        Write-Progress -Activity $Message -Status "$Percent% Complete:"  -PercentComplete $Percent
+    }
+
 }
