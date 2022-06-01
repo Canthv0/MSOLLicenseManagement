@@ -341,14 +341,13 @@ Function Write-SimpleLogfile {
 
 Function Test-MGServiceConnection {
 
-
     # Make sure that the MS Graph Module is installed
     if ($null -eq (Get-Module -ListAvailable Microsoft.Graph.Users)) {
         Write-Error "Microsoft Graph Module Not installed.  Please install from https://docs.microsoft.com/en-us/powershell/microsoftgraph/overview?view=graph-powershell-beta" -ErrorAction Stop
     }
 
     # Log out some basic information since we run this at the begining of every cmdlet
-    Write-SimpleLogfile ('Module version ' + [array](Get-Module Microsoft.Graph.Users | sort-object -Property version -Descending)[0].version.tostring())
+    Write-SimpleLogfile ('Module version ' + [array](Get-Module -ListAvailable Microsoft.Graph.Users | sort-object -Property version -Descending)[0].version.tostring())
 
     # Clear any existing errors
     $error.clear()
@@ -376,8 +375,8 @@ Function Test-MGUserObject {
         }
         # If we couldn't find the UserPrincipalName and we didn't see an @ sign then we need to abort
         else {
-            Write-SimpleLogfile "[ERROR] - Unable to determine if input is a UserPrincipalName"
-            Write-SimpleLogfile "Please provide a UPN or array of objects with the property UserPrincipalName populated"
+            Write-SimpleLogfile "[ERROR] - Unable to determine if input is a UserPrincipalName" -OutHost
+            Write-SimpleLogfile "Please provide a UPN or array of objects with the property UserPrincipalName populated" -OutHost
             Write-Error "Unable to determine if input is a User Principal Name" -ErrorAction Stop
         }
     }
