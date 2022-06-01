@@ -4,37 +4,26 @@ Function Get-MGUserLicenseAssignmentState {
 	<#
  
 	.SYNOPSIS
-	Generates a comprehensive license report.
+	Gathers a users license state using a direct Graph call.
+	There is no cmdlet for this one.
 
 	.DESCRIPTION
-	Generates a license report on a all users or a specified group of users.
-	By Default it will generate a new report file each time it is run.
+	Uses Invoke-MgGraphRequest to request the licnese assignement information for a user
 
-	Report includes the following:
-	* All licenses assigned to each user provided.
-	* State of all plans inside of each license assignment
-	
-	.PARAMETER Users
-	Single UserPrincipalName, Comma seperated List, or Array of objects with UserPrincipalName property.
+	What comes back is JSON encoded data that is converted to PS objects and returned to the caller.
+		
+	.PARAMETER UsersID
+	UserID of the user to gather the information for.
 
-	.PARAMETER OverWrite
-	If specified it will Over Write the current output CSV file instead of generating a new one.
-    
 	.OUTPUTS
-	Log file showing all actions taken by the function.
-	CSV file named License_Report_YYYYMMDD_X.csv that contains the report.
+	PS Objects with license assignment information.
 
 	.EXAMPLE
-	Get-MSOLUserLicenseReport -LogFile C:\temp\report.log
+	Get-MGUserLicenseAssignmentState -UserID 123456
 
-	Creates a new License_Report_YYYYMMDD_X.csv file with the license report in the c:\temp directory for all users.
+	Returns the license assignement information to the calling function.
 
-	.EXAMPLE
-	Get-MSOLUserLicenseReport -LogFile C:\temp\report.log -Users $SalesUsers -Overwrite
-
-	OverWrites the existing c:\temp\License_Report_YYYYMMDD.csv file with a license report for all users in $SalesUsers.
-	
-    #>
+	#>
     
 	param 
 	(
@@ -48,16 +37,17 @@ Function Get-MGUserLicenseAssignmentState {
 	Write-SimpleLogFile "Gathering user license assignment state"
 
 	$Uri = "https://graph.microsoft.com/v1.0/users/" + $UserID + "?`$select=licenseAssignmentStates"
-    
+  
+	# clear any errors
 	$error.clear()
-	$state = Invoke-MgGraphRequest -Uri $Uri -OutputType JSON 2>&1
-
-	if ($error.count -eq 0) {
-		Write-SimpleLogfile ("Found User, graph connected")
-	} else {
-		Write-SimpleLogfile ("Error Encountered: " + $error[0].tostring())
-		Write-Error -message $error[0].tostring() -ErrorAction Stop 
-	}
+	
+	# Try to retrieve the state
+	Try { $state = Invoke-MgGraphRequest -Uri $Uri -OutputType JSON -ErrorAction Stop }
+	catch {
+		Write-SimpleLogfile ("Error Encountered: " + $_)
+		Write-Error -message $_ -ErrorAction Stop 
+		break
+ }
   
 	Return ($state | ConvertFrom-JSON).licenseAssignmentStates
 }
