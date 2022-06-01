@@ -12,7 +12,7 @@
     RootModule        = '.\MSOLLicenseManagement.psm1'
 
     # Version number of this module.
-    ModuleVersion     = '2.2.0'
+    ModuleVersion     = '3.0.0'
 
     # Supported PSEditions
     # CompatiblePSEditions = @()
@@ -118,20 +118,10 @@
 
             # ReleaseNotes of this module
             ReleaseNotes = '
-        2.1.0 - Added support to exporting deleted users to to log report.
-        2.0.5 - Fixed issue with not logging invocation data prior to throwing incompatible switch error
-        2.0.4 - Fixed issue where incorrect typing was causing Update-MSOLUserLicensePlan to fail in all cases (Thx Dan Y.)
-        2.0.3 - Fixed error checkingin Update-MsolUserLicensePlan
-        2.0.2 - Update-MSOLUserLicensePlan provide better infromation when failing
-        2.0.2 - Update-MSOLUserLicensePlan will better handle trying to update a user if the SKU is not found
-        2.0.1 - Added logging of cmdlet invocation to log file
-        2.0.1 - Added Logging of module version to log file
-        2.0.1 - fixed a missed case in Update-MSOLUserLicensePlan where it would try to update a user who did not have the SKU assigned
-        2.0.1 - Updated cmdlet help
-        Major Rework of the cmdlets!
-        * Cmdlets should no longer STOP by default when they encounter an error
-        * To Revert back to this behavior set the ErrorActionPreference to stop in the shell using $ErrorActionPreference = "Stop"
-        * I have done all of the testing I could but there might be some issues still, please report them so they can get fixed'
+        3.0.0 - New Commands have ONLY been developed on PowerShell 7.  Once MSOL commands are removed module will require PowerShell 7 or higher.
+        3.0.0 - Update to log file method to generate logs in $env:LocalAppData\MGLicenseManagement.log
+        3.0.0 - NEW COMMAND - Get-MGUserLicenseRport - Uses MSGraph to gather a similar report to the previous MSOLUserLicenseReport cmdlet
+        3.0.0 - BEGINING MIGRATION TO MSGRAPH -- MSOL will be depricated soon'
 
             # External dependent modules of this module
             # ExternalModuleDependencies = ''

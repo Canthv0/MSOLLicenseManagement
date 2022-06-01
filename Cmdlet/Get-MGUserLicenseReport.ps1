@@ -16,21 +16,18 @@ Function Get-MGUserLicenseReport {
 	
 	.PARAMETER Users
 	Single UserPrincipalName, Comma seperated List, or Array of objects with UserPrincipalName property.
-
-	.PARAMETER OverWrite
-	If specified it will Over Write the current output CSV file instead of generating a new one.
     
 	.OUTPUTS
-	Log file showing all actions taken by the function.
+	Log file showing all actions taken by the function $env:LOCALAPPDATA\
 	CSV file named License_Report_YYYYMMDD_X.csv that contains the report.
 
 	.EXAMPLE
-	Get-MSOLUserLicenseReport -LogFile C:\temp\report.log
+	Get-MGUserLicenseReport -LogFile C:\temp\report.log
 
 	Creates a new License_Report_YYYYMMDD_X.csv file with the license report in the c:\temp directory for all users.
 
 	.EXAMPLE
-	Get-MSOLUserLicenseReport -LogFile C:\temp\report.log -Users $SalesUsers -Overwrite
+	Get-MGUserLicenseReport -LogFile C:\temp\report.log -Users $SalesUsers -Overwrite
 
 	OverWrites the existing c:\temp\License_Report_YYYYMMDD.csv file with a license report for all users in $SalesUsers.
 	
