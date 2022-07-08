@@ -460,3 +460,57 @@ Function Update-MGProgress {
     }
 
 }
+
+# Validate we have provided a valid SKU or collect one if we have provided none
+Function Select-MGSKU {
+    param 
+    (
+        [string]$SKUToCheck,                
+        [string]$Message
+    )	
+	
+    # If we don't have a value for the SKU then we need to ask for one.
+    if ([string]::IsNullOrEmpty($SKUToCheck)) {
+		
+        Write-SimpleLogfile ("No SKU value provided.  Please select from the availible account SKUs") -OutHost
+	
+        # Setup a counter	
+        $i = 1
+		
+        # Write out the provided message
+        Write-Host "`n$Message`n"
+		
+		
+        # Get all of the SKUs and display them with a "selection number"
+        $TenantSKU = Get-MSOLAccountSKU
+        ForEach ($sku in $TenantSKU) {	
+            Write-Host ([string]$i + " - " + $sku.SKUPartNumber)	
+            $i++
+        }
+		
+        # Collect the selected item from the user
+        [int]$Selected = 0
+        While (($Selected -ge $i) -or ($Selected -le 0) -or ($null -eq $Selected)) {
+            [int]$Selected = Read-Host ("`nSelect the Number for the SKU to use.")	
+        }
+		
+        Return ($TenantSKU[$Selected - 1].AccountSkuID)
+	
+    }
+    # We need to verify that the submitted SKU is valid
+    else {
+	
+        Write-SimpleLogfile ("Verifying SKU " + $SKUToCheck)
+		
+        # If we can't find it then throw and error and abort
+        if ($null -eq (Get-MSOLAccountSKU | Where-Object { $_.AccountSKUID -eq $SKUToCheck })) {
+            Write-SimpleLogfile ("[ERROR] - Did not find SKU with ID: " + $SKUToCheck) -OutHost
+            Write-Error ("Unable to locate SKU " + $SKUToCheck) -ErrorAction Stop
+        }
+        # If we found it log it
+        else {
+            Write-SimpleLogfile ("Found SKU") -OutHost
+            Return $SKUToCheck.ToUpper()
+        }
+    }	
+}
