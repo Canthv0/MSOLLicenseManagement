@@ -35,8 +35,8 @@ Switch | Description|Default
 -------|-------|-------
 Users|UserPrincipalName</br>Command Seperated List</br>Array of objects| none
 OverWrite|Overwrite existing output file.|False
-Logfile|Logfile location|None
-IncludeDeletedUsers|Includes deleted users if reporting on ALL users|False
+
+# Legacy Commands
 
 ### `Add-MSOLUserLicense`
 Adds a SKU to a collection of users.
