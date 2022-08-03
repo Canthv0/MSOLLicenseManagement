@@ -204,7 +204,7 @@ Function Get-MGUserLicenseReport {
     # If overwrite has been set then just take the file name as the date and force overwrite the file
     if ($OverWrite) {
         # Build our file name
-        $path = Join-path (Split-Path $LogFile -Parent) ("License_Report_" + [string](Get-Date -UFormat %Y%m%d) + ".csv")
+        $path = Join-path $env:LOCALAPPDATA ("License_Report_" + [string](Get-Date -UFormat %Y%m%d) + ".csv")
     }
 	
     # Default behavior will be to create a new incremental file name

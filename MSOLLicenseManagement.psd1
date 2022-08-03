@@ -12,7 +12,7 @@
     RootModule        = '.\MSOLLicenseManagement.psm1'
 
     # Version number of this module.
-    ModuleVersion     = '3.0.1'
+    ModuleVersion     = '3.0.2'
 
     # Supported PSEditions
     # CompatiblePSEditions = @()
@@ -118,6 +118,7 @@
 
             # ReleaseNotes of this module
             ReleaseNotes = '
+        3.0.2 - Fixed issue with -overwrite for Get-MGUserLicenseReport
         3.0.0 - New Commands have ONLY been developed on PowerShell 7.  Once MSOL commands are removed module will require PowerShell 7 or higher.
         3.0.0 - Update to log file method to generate logs in $env:LocalAppData\MGLicenseManagement.log
         3.0.0 - NEW COMMAND - Get-MGUserLicenseRport - Uses MSGraph to gather a similar report to the previous MSOLUserLicenseReport cmdlet
