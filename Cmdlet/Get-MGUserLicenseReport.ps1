@@ -18,18 +18,18 @@ Function Get-MGUserLicenseReport {
 	Single UserPrincipalName, Comma seperated List, or Array of objects with UserPrincipalName property.
     
 	.OUTPUTS
-	Log file showing all actions taken by the function $env:LOCALAPPDATA\
-	CSV file named License_Report_YYYYMMDD_X.csv that contains the report.
+	Log file showing all actions taken by the function $env:LOCALAPPDATA\MGLicenseManagement.log
+	CSV file named $env:LOCALAPPDATA\License_Report_YYYYMMDD_X.csv that contains the report.
 
 	.EXAMPLE
-	Get-MGUserLicenseReport -LogFile C:\temp\report.log
+	Get-MGUserLicenseReport
 
-	Creates a new License_Report_YYYYMMDD_X.csv file with the license report in the c:\temp directory for all users.
+	Creates a new License_Report_YYYYMMDD_X.csv file with the license report in the $env:LOCALAPPDATA\ directory for all users.
 
 	.EXAMPLE
-	Get-MGUserLicenseReport -LogFile C:\temp\report.log -Users $SalesUsers -Overwrite
+	Get-MGUserLicenseReport -Users $SalesUsers -Overwrite
 
-	OverWrites the existing c:\temp\License_Report_YYYYMMDD.csv file with a license report for all users in $SalesUsers.
+	OverWrites the existing $env:LOCALAPPDATA\\License_Report_YYYYMMDD.csv file with a license report for all users in $SalesUsers.
 	
     #>
     

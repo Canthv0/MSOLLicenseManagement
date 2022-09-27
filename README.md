@@ -25,7 +25,7 @@ This module provides the following cmdlets to help with the management of licens
 ### `Get-MGUserLicenseReport`
 Switch | Description|Default
 -------|-------|-------
-Users|UserPrincipalName</br>Command Seperated List</br>Array of objects| none
+Users|UserPrincipalName</br>Comma Seperated List</br>Array of objects| none
 
 
 ### `Get-MSOLUserLicenseReport`
@@ -33,7 +33,7 @@ Gets a csv report file with users and their assigned licenses.
 
 Switch | Description|Default
 -------|-------|-------
-Users|UserPrincipalName</br>Command Seperated List</br>Array of objects| none
+Users|UserPrincipalName</br>Comma Seperated List</br>Array of objects| none
 OverWrite|Overwrite existing output file.|False
 
 # Legacy Commands
@@ -44,7 +44,7 @@ Can set enabled OR disabled plans when added SKU
 
 Switch | Description|Default
 -------|-------|-------
-Users|UserPrincipalName</br>Command Seperated List</br>Array of objects| none
+Users|UserPrincipalName</br>Comma Seperated List</br>Array of objects| none
 SKU|SKU to be added|None
 Location|Sets user location|None
 PlansToDisable|Comma seperated list of plans to Disable|None
@@ -56,7 +56,7 @@ Converts a SKU from inherited (group assigned) to Explicitly assigned
 
 Switch | Description|Default
 -------|-------|-------
-Users|UserPrincipalName</br>Command Seperated List</br>Array of objects| none
+Users|UserPrincipalName</br>Comma Seperated List</br>Array of objects| none
 SKU|SKU to be converted|None
 Logfile|Logfile location|None
 
@@ -67,7 +67,7 @@ Only works on explictly assigned SKUs
 
 Switch | Description|Default
 -------|-------|-------
-Users|UserPrincipalName</br>Command Seperated List</br>Array of objects| none
+Users|UserPrincipalName</br>Comma Seperated List</br>Array of objects| none
 SKU|SKU to be removed|None
 Logfile|Logfile location|None
 
@@ -76,7 +76,7 @@ OVERWRITES the current plan settings for an assigned SKU with the new plan setti
 
 Switch | Description|Default
 -------|-------|-------
-Users|UserPrincipalName</br>Command Seperated List</br>Array of objects| none
+Users|UserPrincipalName</br>Comma Seperated List</br>Array of objects| none
 SKU|SKU to be modified|None
 PlansToDisable|Comma seperated list of plans to Disable|None
 PlansToEnable|Comma seperate list of plans to Enable|None
@@ -87,7 +87,7 @@ Switch the user from SKU A to SKU B without interrupting license assignment.
 
 Switch | Description|Default
 -------|-------|-------
-Users|UserPrincipalName</br>Command Seperated List</br>Array of objects| none
+Users|UserPrincipalName</br>Comma Seperated List</br>Array of objects| none
 SKU|SKU to be added|None
 SKUToReplace|SKU that will be replaced|None
 Location|Sets user location|None
@@ -101,7 +101,7 @@ Updates the current plan settings for an assigned SKU while maintaining existing
 
 Switch | Description|Default
 -------|-------|-------
-Users|UserPrincipalName</br>Command Seperated List</br>Array of objects| none
+Users|UserPrincipalName</br>Comma Seperated List</br>Array of objects| none
 SKU|SKU to be modified|None
 PlansToDisable|Comma seperated list of plans to Disable|None
 PlansToEnable|Comma seperate list of plans to Enable|None
