@@ -91,9 +91,6 @@ Function Get-MGUserLicenseReport {
     # Populate in the generic object to the list array
     $Output.Add($Object) | Out-Null
 
-    # Make sure our UserToProcess array is created and is null
-    $UserToProcess = $null
-
     # See if our user array is null and pull all users if needed
     if ($null -eq $Users) {
 
