@@ -67,13 +67,6 @@
 
     # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
     NestedModules     = @(
-        '.\Cmdlet\Get-MSOLUserLicenseReport.ps1'
-        '.\Cmdlet\Convert-MSOLUserLIcenseToExplict.ps1',
-        '.\Cmdlet\Add-MSOLUserLicense.ps1',
-        '.\Cmdlet\Remove-MSOLUserLicense.ps1',
-        '.\Cmdlet\Set-MSOLUserLicensePlan.ps1',
-        '.\Cmdlet\Update-MSOLUserLicensePlan.ps1',
-        '.\Cmdlet\Switch-MSOLUserLicense.ps1',
         '.\Cmdlet\Get-MGUserLicenseReport.ps1',
         '.\Cmdlet\Get-MGUserLicenseAssignementState.ps1'
     )
