@@ -12,7 +12,7 @@
     RootModule        = '.\MSOLLicenseManagement.psm1'
 
     # Version number of this module.
-    ModuleVersion     = '3.0.4'
+    ModuleVersion     = '4.0.0'
 
     # Supported PSEditions
     # CompatiblePSEditions = @()
@@ -68,11 +68,11 @@
     # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
     NestedModules     = @(
         '.\Cmdlet\Get-MGUserLicenseReport.ps1',
-        '.\Cmdlet\Get-MGUserLicenseAssignementState.ps1'
+        '.\Cmdlet\Get-MGUserLicenseAssignmentState.ps1'
     )
 
     # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
-    FunctionsToExport = 'Get-MSOLUserLicenseReport', 'Convert-MSOLUserLicenseToExplicit', 'Add-MSOLUserLicense', 'Remove-MSOLUserLicense', 'Set-MSOLUserLicensePlan', 'Update-MSOLUserLicensePlan', 'Switch-MSOLUserLicense', 'Get-MGUserLicenseReport'
+    FunctionsToExport = 'Get-MGUserLicenseReport'
 
     # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
     CmdletsToExport   = @()
@@ -98,7 +98,7 @@
         PSData = @{
 
             # Tags applied to this module. These help with module discovery in online galleries.
-            Tags         = @('O365', 'MSOL', 'License', 'Management', 'SKU', 'Plan', 'AzueAD', 'Bulk')
+            Tags         = @('O365', 'Graph', 'License', 'Management', 'SKU', 'Plan', 'AzueAD', 'Bulk')
 
             # A URL to the license for this module.
             # LicenseUri = ''
@@ -111,14 +111,8 @@
 
             # ReleaseNotes of this module
             ReleaseNotes = '
-        3.0.4 - Fixed issue with -users command failing with Get-MGUserLicenseReport
-        3.0.3 - Updated help documentation
-        3.0.2 - Fixed issue with -overwrite for Get-MGUserLicenseReport
-        3.0.0 - New Commands have ONLY been developed on PowerShell 7.  Once MSOL commands are removed module will require PowerShell 7 or higher.
-        3.0.0 - Update to log file method to generate logs in $env:LocalAppData\MGLicenseManagement.log
-        3.0.0 - NEW COMMAND - Get-MGUserLicenseRport - Uses MSGraph to gather a similar report to the previous MSOLUserLicenseReport cmdlet
-        3.0.0 - BEGINING MIGRATION TO MSGRAPH -- MSOL will be depricated soon'
-
+            4.0.0 - Removed legacy commands and starting full move to Graph
+        '
             # External dependent modules of this module
             # ExternalModuleDependencies = ''
 
